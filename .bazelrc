@@ -1,0 +1,4 @@
+build --aspects //:aspects.bzl%deps_enforcer
+build --aspects //:aspects.bzl%mypy_aspect
+build --output_groups=+pydeps,+mypy
+

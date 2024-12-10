@@ -1,0 +1,25 @@
+load("@pypi//:requirements.bzl", "requirement")
+load("@rules_mypy//mypy:mypy.bzl", "mypy_cli")
+load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_uv//uv:pip.bzl", "pip_compile")
+
+exports_files(["mypy.ini"])
+
+py_binary(
+    name = "test",
+    srcs = ["test.py"],
+    deps = [
+        requirement("click"),
+    ],
+)
+
+pip_compile(
+    name = "generate_requirements_lock",
+    requirements_txt = "requirements.txt",
+    universal = True,
+)
+
+mypy_cli(
+    name = "mypy_cli",
+    tags = ["no-lint"],
+)

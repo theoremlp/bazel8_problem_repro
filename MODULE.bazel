@@ -1,0 +1,37 @@
+module(
+    name = "repro",
+    version = "0.0.0",
+)
+
+bazel_dep(name = "rules_mypy", version = "0.18.0")
+bazel_dep(name = "rules_pydeps", version = "0.2.0")
+bazel_dep(name = "rules_python", version = "1.0.0")
+bazel_dep(name = "rules_uv", version = "0.44.0")
+
+# Register python toolchains
+PYTHON_VERSION = "3.12"
+
+PYTHON_VERSION_SNAKE = PYTHON_VERSION.replace(".", "_")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    python_version = PYTHON_VERSION,
+)
+use_repo(python, "python_" + PYTHON_VERSION_SNAKE, "python_versions")
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    enable_implicit_namespace_pkgs = True,
+    experimental_index_url = "https://pypi.org/simple",  # use Bazel downloader
+    hub_name = "pypi",
+    python_version = PYTHON_VERSION,
+    requirements_by_platform = {"//:requirements.txt": "*"},
+)
+use_repo(pip, "pypi")
+
+reqs = use_extension("@rules_pydeps//pydeps:reqs.bzl", "reqs")
+reqs.requirements(
+    pip_requirements = "@pypi//:requirements.bzl",
+    requirements_in = "//:requirements.in",
+)
+use_repo(reqs, "reqs")
